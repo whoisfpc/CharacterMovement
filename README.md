@@ -40,5 +40,8 @@ npm run dev
 - [ ] Improve robustness
 - [ ] Network multiplayer
 
-### Credits
+## License
+This project is licensed under the MIT License - see the **LICENSE** file for details
+
+## Credits
 Test animation sprites come from [Animated Pixel Adventurer](https://rvros.itch.io/animated-pixel-hero)
