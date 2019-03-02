@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Network Movement Demo</title>
+</head>
+<body>
+    <div style="border: 5px solid blue; padding: 5px; display: inline-block; vertical-align: top">
+        <canvas id="canvas1" width="600" height="500"></canvas>
+        <p>
+            <b>Client 1</b>
+            - move with W/A/S/D keys
+            <br>
+            Lag = 
+            <input type="text" id="client1_lag", size="5" value="150">
+            ms · Fps = 
+            <input type="text" id="client1_fps", size="5" value="60">
+             · 
+            <input type="checkbox" id="client1_connect" disabled>
+            Connect
+            <br>
+            <input type="checkbox" id="client1_prediction">
+            Prediciton · 
+            <input type="checkbox" id="client1_reconciliation" checked>
+            Reconciliation · 
+            <input type="checkbox" id="client1_jitterBuffer">
+            JitterBuffer · 
+            <input type="checkbox" id="client1_visualSmooth">
+            VisualSmooth
+            <br>
+            LagVariance = 
+            <input type="text" id="client1_lagVariance", size="5" value="0">
+            ms · Loss = 
+            <input type="text" id="client1_loss", size="5" value="0">
+        </p>
+    </div>
+    <div style="border: 5px solid grey; padding: 5px; display: inline-block; vertical-align: top">
+        <canvas id="canvas2" width="600" height="500"></canvas>
+        <p>
+            <b>Server</b>
+            <br>
+            Fps = 
+            <input type="text" id="server_fps", size="5" value="30">
+             · 
+            <input type="checkbox" id="server_sync" disabled checked>
+            Always Sync
+        </p>
+    </div>
+    <div style="border: 5px solid red; padding: 5px; display: inline-block; vertical-align: top">
+        <canvas id="canvas3" width="600" height="500"></canvas>
+        <p>
+            <b>Client 2</b>
+            - move with ↑/←/↓/→ keys
+            <br>
+            Lag = 
+            <input type="text" id="client2_lag", size="5" value="5">
+            ms · Fps = 
+            <input type="text" id="client2_fps", size="5" value="60">
+             · 
+            <input type="checkbox" id="client2_connect" disabled>
+            Connect
+            <br>
+            <input type="checkbox" id="client2_prediction">
+            Prediciton · 
+            <input type="checkbox" id="client2_reconciliation" checked>
+            Reconciliation · 
+            <input type="checkbox" id="client2_jitterBuffer">
+            JitterBuffer · 
+            <input type="checkbox" id="client2_visualSmooth">
+            VisualSmooth
+            <br>
+            LagVariance = 
+            <input type="text" id="client2_lagVariance", size="5" value="0">
+            ms · Loss = 
+            <input type="text" id="client2_loss", size="5" value="0">
+        </p>
+    </div>
+</body>
+<script src="bundle.js"></script>
+</html>

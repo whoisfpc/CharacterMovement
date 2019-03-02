@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Animation</title>
+</head>
+<body>
+    <canvas id="canvas" width="1600" height="600"></canvas>
+</body>
+<script>
+
+    /** @type {HTMLCanvasElement} */
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+
+    const animConfig = {
+        imageSrcs: [
+            "images/adventurer-run-00.png",
+            "images/adventurer-run-01.png",
+            "images/adventurer-run-02.png",
+            "images/adventurer-run-03.png",
+            "images/adventurer-run-04.png",
+            "images/adventurer-run-05.png",
+        ],
+        frames: [
+            {
+                idx: 0,
+                duration: 0.1
+            },
+            {
+                idx: 1,
+                duration: 0.1
+            },
+            {
+                idx: 2,
+                duration: 0.1
+            },
+            {
+                idx: 3,
+                duration: 0.1
+            },
+            {
+                idx: 4,
+                duration: 0.1
+            },
+            {
+                idx: 5,
+                duration: 0.1
+            }
+        ]
+    }
+
+    class MyAnimation {
+        /**
+         * @typedef {Object} Frame
+         * @property {number} idx
+         * @property {number} duration
+         * 
+         * @typedef {Object} AnimConfig
+         * @property {string[]} imageSrcs
+         * @property {Frame[]} frames
+         * 
+         * @param {AnimConfig} config
+         */
+        constructor(config) {
+            /** @type {Image[]} */
+            this.images = [];
+            this.loadImages(config.imageSrcs);
+            this.frames = config.frames;
+            this.currentFrameIdx = 0;
+            this.frameCount = this.frames.length;
+            this.currentDuration = 0;
+        }
+
+        /**
+         * @param {string[]} imageSrcs
+         */
+        loadImages(imageSrcs) {
+            for (let src of imageSrcs) {
+                const image = new Image();
+                this.images.push(image)
+                image.src = src;
+            }
+        }
+
+        /**
+         * @param {CanvasRenderingContext2D} ctx
+         * @param {number} dt
+         */
+        draw(ctx, dt) {
+            ctx.clearRect(0, 0, 1600, 600);
+            const frame = this.frames[this.currentFrameIdx];
+            const image = this.images[frame.idx];
+            ctx.drawImage(image, 700, 300, image.width * 2, image.height * 2);
+            this.currentDuration += dt;
+            let currentMaxDuration = frame.duration;
+            while (this.currentDuration >= currentMaxDuration) {
+                this.currentDuration -= currentMaxDuration;
+                this.currentFrameIdx = (this.currentFrameIdx + 1) % this.frameCount;
+                currentMaxDuration = this.frames[this.currentFrameIdx].duration;
+            }
+        }
+    }
+
+    ctx.imageSmoothingEnabled = false;
+    const anim = new MyAnimation(animConfig);
+
+    let lastTime = 0;
+    const draw = (timestamp) => {
+        if (timestamp - lastTime < 300) {
+            let dt = (timestamp - lastTime) / 1000;
+            anim.draw(ctx, dt);
+        }
+        lastTime = timestamp;
+        requestAnimationFrame(draw);
+    };
+    requestAnimationFrame(draw);
+
+</script>
+</html>

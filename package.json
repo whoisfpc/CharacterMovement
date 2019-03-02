@@ -1,0 +1,25 @@
+{
+  "name": "demo",
+  "version": "1.0.0",
+  "description": "a capsule-base network player movement sync demo",
+  "keywords": [
+    "javascript",
+    "game",
+    "network",
+    "movement"
+  ],
+  "author": "wo_fpc",
+  "license": "ISC",
+  "devDependencies": {
+    "npm-run-all": "^4.1.5",
+    "rollup": "^1.1.2",
+    "serve": "^10.1.2"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "rollup -c",
+    "watch": "rollup -c -w",
+    "dev": "npm-run-all --parallel start watch",
+    "start": "serve public"
+  }
+}
