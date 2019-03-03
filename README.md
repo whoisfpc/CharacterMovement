@@ -30,6 +30,12 @@ npm run dev
 ## What it is not
 > It is not a library, so it will hard to direct use it in other project.
 
+## Debug Console
+|    Console Vars     | Description                   |
+| :-----------------: | :---------------------------- |
+|     Time.scale      | (0-1), scale time             |
+| Debug.showDebugDraw | (true,false), show move infos |
+
 ## Todo list
 - [x] Walking
 - [x] Walking slope
