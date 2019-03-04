@@ -74,6 +74,9 @@
             this.currentFrameIdx = 0;
             this.frameCount = this.frames.length;
             this.currentDuration = 0;
+            this.pivotX = 28;
+            this.pivotY = 24;
+            this.scale = 2;
         }
 
         /**
@@ -92,17 +95,25 @@
          * @param {number} dt
          * @param {boolean} flip
          */
-        draw(ctx, dt, flip) {
+        draw(ctx, dt, flip, x, y) {
             const frame = this.frames[this.currentFrameIdx];
             const image = this.images[frame.idx];
             ctx.save()
+            const w = image.width * this.scale;
+            const h = image.height * this.scale;
+            const px = this.pivotX * this.scale;
+            const py = this.pivotY * this.scale;
             if (flip) {
-                ctx.translate(700, 300);
+                ctx.translate(x, y);
                 ctx.scale(-1, 1)
-                ctx.drawImage(image, -image.width * 2, 0, image.width * 2, image.height * 2);
+                ctx.fillStyle = "#E87A90C0"
+                ctx.fillRect(-px, -py, w, h);
+                ctx.drawImage(image, -px, -py, w, h);
             } else {
-                ctx.translate(700, 300 + 37*2);
-                ctx.drawImage(image, 0, 0, image.width * 2, image.height * 2);
+                ctx.translate(x, y);
+                ctx.fillStyle = "#78C2C4C0"
+                ctx.fillRect(-px, -py, w, h);
+                ctx.drawImage(image, -px, -py, w, h);
             }
             ctx.restore();
             this.currentDuration += dt;
@@ -127,12 +138,12 @@
             ctx.clearRect(0, 0, 1600, 600);
             ctx.fillStyle = "red"
             ctx.fillRect(0, 0, 700, 300);
-            ctx.fillStyle = "green"
-            ctx.fillRect(700, 300, 50 * 2, 37 * 2);
-            ctx.fillStyle = "yellow"
-            ctx.fillRect(700, 300 + 37 * 2, 50 * 2, 37 * 2);
-            anim.draw(ctx, dt, false);
-            flipAnim.draw(ctx, dt, true);
+            // ctx.fillStyle = "green"
+            // ctx.fillRect(700, 300, 50 * 2, 37 * 2);
+            // ctx.fillStyle = "yellow"
+            // ctx.fillRect(700, 300 + 37 * 2, 50 * 2, 37 * 2);
+            anim.draw(ctx, dt, false, 700, 300+37*2);
+            flipAnim.draw(ctx, dt, true, 700, 300);
         }
         lastTime = timestamp;
         requestAnimationFrame(draw);
