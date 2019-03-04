@@ -90,12 +90,21 @@
         /**
          * @param {CanvasRenderingContext2D} ctx
          * @param {number} dt
+         * @param {boolean} flip
          */
-        draw(ctx, dt) {
-            ctx.clearRect(0, 0, 1600, 600);
+        draw(ctx, dt, flip) {
             const frame = this.frames[this.currentFrameIdx];
             const image = this.images[frame.idx];
-            ctx.drawImage(image, 700, 300, image.width * 2, image.height * 2);
+            ctx.save()
+            if (flip) {
+                ctx.translate(700, 300);
+                ctx.scale(-1, 1)
+                ctx.drawImage(image, -image.width * 2, 0, image.width * 2, image.height * 2);
+            } else {
+                ctx.translate(700, 300 + 37*2);
+                ctx.drawImage(image, 0, 0, image.width * 2, image.height * 2);
+            }
+            ctx.restore();
             this.currentDuration += dt;
             let currentMaxDuration = frame.duration;
             while (this.currentDuration >= currentMaxDuration) {
@@ -108,12 +117,22 @@
 
     ctx.imageSmoothingEnabled = false;
     const anim = new MyAnimation(animConfig);
+    const flipAnim = new MyAnimation(animConfig);
 
+    let stop = false;
     let lastTime = 0;
     const draw = (timestamp) => {
-        if (timestamp - lastTime < 300) {
+        if (timestamp - lastTime < 300 && !stop) {
             let dt = (timestamp - lastTime) / 1000;
-            anim.draw(ctx, dt);
+            ctx.clearRect(0, 0, 1600, 600);
+            ctx.fillStyle = "red"
+            ctx.fillRect(0, 0, 700, 300);
+            ctx.fillStyle = "green"
+            ctx.fillRect(700, 300, 50 * 2, 37 * 2);
+            ctx.fillStyle = "yellow"
+            ctx.fillRect(700, 300 + 37 * 2, 50 * 2, 37 * 2);
+            anim.draw(ctx, dt, false);
+            flipAnim.draw(ctx, dt, true);
         }
         lastTime = timestamp;
         requestAnimationFrame(draw);
