@@ -136,8 +136,18 @@
         if (timestamp - lastTime < 300 && !stop) {
             let dt = (timestamp - lastTime) / 1000;
             ctx.clearRect(0, 0, 1600, 600);
-            ctx.fillStyle = "red"
-            ctx.fillRect(0, 0, 700, 300);
+
+            ctx.beginPath();
+            ctx.moveTo(700, 0);
+            ctx.lineTo(700, 600);
+            ctx.strokeStyle = "#FF00FF";
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(0, 300);
+            ctx.lineTo(1600, 300);
+            ctx.strokeStyle = "#FF00FF";
+            ctx.stroke();
             // ctx.fillStyle = "green"
             // ctx.fillRect(700, 300, 50 * 2, 37 * 2);
             // ctx.fillStyle = "yellow"
