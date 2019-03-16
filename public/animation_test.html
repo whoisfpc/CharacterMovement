@@ -74,8 +74,8 @@
             this.currentFrameIdx = 0;
             this.frameCount = this.frames.length;
             this.currentDuration = 0;
-            this.pivotX = 28;
-            this.pivotY = 24;
+            this.pivotX = 30;
+            this.pivotY = 22;
             this.scale = 2;
         }
 
@@ -132,6 +132,7 @@
 
     let stop = false;
     let lastTime = 0;
+    let flip = false;
     const draw = (timestamp) => {
         if (timestamp - lastTime < 300 && !stop) {
             let dt = (timestamp - lastTime) / 1000;
@@ -152,13 +153,44 @@
             // ctx.fillRect(700, 300, 50 * 2, 37 * 2);
             // ctx.fillStyle = "yellow"
             // ctx.fillRect(700, 300 + 37 * 2, 50 * 2, 37 * 2);
-            anim.draw(ctx, dt, false, 700, 300+37*2);
-            flipAnim.draw(ctx, dt, true, 700, 300);
+            //anim.draw(ctx, dt, false, 700, 300+37*2);
+            {
+                const radius = 12;
+                const halfHeight = 18;
+                const theColor = "#c00000";
+                const a = {
+                    x: 700,
+                    y: 300 - halfHeight,
+                }
+                const b = {
+                    x: 700,
+                    y: 300 + halfHeight,
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(a.x - radius, a.y);
+                ctx.arcTo(a.x - radius, a.y - radius, a.x, a.y - radius, radius);
+                ctx.arcTo(a.x + radius, a.y - radius, a.x + radius, a.y, radius);
+                ctx.lineTo(b.x + radius, b.y);
+                ctx.arcTo(b.x + radius, b.y + radius, b.x, b.y + radius, radius);
+                ctx.arcTo(b.x - radius, b.y + radius, b.x - radius, b.y, radius);
+                ctx.closePath();
+                ctx.fillStyle = theColor;
+                ctx.fill();
+            }
+
+            flipAnim.draw(ctx, dt, flip, 700, 300);
         }
         lastTime = timestamp;
         requestAnimationFrame(draw);
     };
     requestAnimationFrame(draw);
+
+    window.onkeydown = (e) => {
+        if (e.code == "Space") {
+            flip = !flip;
+        }
+    }
 
 </script>
 </html>
