@@ -43,10 +43,30 @@ export default class Client extends Instance {
         this.serverInterval = 0;
     }
 
+    receiveNetMessage() {
+        if (!this.connected) {
+            return;
+        }
+        /**@type {import("./server").ReplicateMoveMsg} */
+        let replicateMoveMsg = this.recvChannel.fetch(this.currentTime);
+        while (replicateMoveMsg != null) {
+            for (let moveMsg of replicateMoveMsg.moveMsgs) {
+                if (moveMsg.id != this.mainPlayer.id) {
+                    const findPlayer = this.players.find(player => player.id == moveMsg.id);
+                    if (findPlayer) {
+                        findPlayer.onReplicateMove(moveMsg);
+                    }
+                }
+            }
+            replicateMoveMsg = this.recvChannel.fetch(this.currentTime);
+        }
+    }
+
     /**
      * @param {number} dt
      */
     update(dt) {
+        this.receiveNetMessage();
         this.input.updateState();
         if (this.mainPlayer) {
             // handle mainPlayer move
@@ -62,6 +82,17 @@ export default class Client extends Instance {
             this.mainPlayer.addMovement(inputVec);
         }
         super.update(dt);
+        this.sendNetMessage();
+    }
+
+    sendNetMessage() {
+        if (!this.connected) {
+            return;
+        }
+        const moveMsg = this.mainPlayer.consumeMoveMsg();
+        if (moveMsg != null) {
+            this.sendChannel.push(this.currentTime, moveMsg);
+        }
     }
 
     /**
@@ -96,6 +127,7 @@ export default class Client extends Instance {
         this.players.splice(1);
         this.connected = false;
         this.mainPlayer.isNetMode = false;
+        this.mainPlayer.clearNetState();
     }
 
     /**

@@ -5,13 +5,6 @@ import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
 
-/**
- * @typedef {Object} PlayerInfo
- * @property {number} id - player id
- * @property {string} color - player color
- * @property {Vec2} pos - player position
- */
-
 const Role = {
     simulate: 0,
     authority: 1,
@@ -93,6 +86,18 @@ export {
     Role,
 }
 
+/**
+ * @typedef {Object} PlayerInfo
+ * @property {number} id - player id
+ * @property {string} color - player color
+ * @property {Vec2} pos - player position
+ *
+ * @typedef {Object} MoveMsg
+ * @property {number} id
+ * @property {number} sequence
+ * @property {Vec2} pos
+ */
+
 export default class Player {
     /**
      * @param {Vec2} pos
@@ -123,7 +128,6 @@ export default class Player {
         /** @type {Vec2} */
         this.velocity = new Vec2(0, 0);
         this.acceleration = new Vec2(0, 0);
-        this.lastSequence = 0;
         this.visualSmooth = false;
 
         this.movementInfo = {
@@ -144,6 +148,11 @@ export default class Player {
             airControl: 0.2,
             maxJumpHoldTime: 1,
         };
+
+        this.sequence = 1;
+        this.lastReceiveSequence = 0;
+        /**@type {MoveMsg} */
+        this.pendingMoveMsg = null;
     }
 
     /**
@@ -291,9 +300,20 @@ export default class Player {
      * @param {number} dt
      */
     update(dt) {
-        const input = this.consumeMovement();
-        this.acceleration = input.mul(this.maxAcceleration);
-        this.performMovement(dt);
+        if (this.isMainPlayer) {
+            const input = this.consumeMovement();
+            this.acceleration = input.mul(this.maxAcceleration);
+            this.performMovement(dt);
+            if (this.isNetMode) {
+                this.updateMoveMsg();
+            }
+        }
+        else if (this.role == Role.authority) {
+            this.updateMoveMsg();
+        }
+        else if (this.role == Role.simulate) {
+
+        }
 
         if (Debug.showDebugDraw) {
             if (this.movementInfo.currentFloor.isWalkableFloor()) {
@@ -928,5 +948,68 @@ export default class Player {
             this.movementInfo.justTeleported = this.movementInfo.justTeleported
                 || !this.movementConfig.horizontalMove || oldFloorDist < 0;
         }
+    }
+
+    clearNetState() {
+        this.lastReceiveSequence = 0;
+    }
+
+    /**
+     * @return {number}
+     */
+    generateSequence() {
+        const newSequence = this.sequence;
+        this.sequence++;
+        return newSequence;
+    }
+
+    updateMoveMsg() {
+        this.pendingMoveMsg = {
+            id: this.id,
+            sequence: this.generateSequence(),
+            pos: this.pos,
+        }
+    }
+
+    /**
+     * @return {MoveMsg}
+     */
+    consumeMoveMsg() {
+        const moveMsg = this.pendingMoveMsg;
+        this.pendingMoveMsg = null;
+        return moveMsg;
+    }
+
+    /**
+     *
+     * @param {MoveMsg} moveMsg
+     */
+    serverMove(moveMsg) {
+        if (this.role != Role.authority) {
+            console.warn("ServerMove should only call on authority players");
+            return;
+        }
+        if (moveMsg.sequence <= this.lastReceiveSequence) {
+            return;
+        }
+        this.lastReceiveSequence = moveMsg.sequence;
+        this.pos = moveMsg.pos;
+    }
+
+    /**
+     *
+     * @param {MoveMsg} moveMsg
+     */
+    onReplicateMove(moveMsg) {
+        if (this.role != Role.simulate) {
+            console.warn("OnReplicateMove should only call on simulate players");
+            return;
+        }
+        // discard delay or duplicate message
+        if (moveMsg.sequence <= this.lastReceiveSequence) {
+            return;
+        }
+        this.lastReceiveSequence = moveMsg.sequence;
+        this.pos = moveMsg.pos;
     }
 }

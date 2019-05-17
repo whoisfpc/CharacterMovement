@@ -5,6 +5,11 @@ import Player, { Role } from "./player";
 import Channel from "../network/channel";
 import Client from "./client";
 
+/**
+ * @typedef {Object} ReplicateMoveMsg
+ * @property {import("./player").MoveMsg[]} moveMsgs
+ */
+
 export default class Server extends Instance {
     /**
      * @param {HTMLCanvasElement} canvas
@@ -98,11 +103,45 @@ export default class Server extends Instance {
         }
     }
 
+    receiveNetMessage() {
+        for (let recvChannel of this.recvChannels) {
+            /**@type {import("./player").MoveMsg} */
+            let moveMsg = recvChannel.fetch(this.currentTime);
+            while (moveMsg != null) {
+                if (this.idMap.has(moveMsg.id)) {
+                    const idx = this.idMap.get(moveMsg.id);
+                    this.players[idx].serverMove(moveMsg);
+                    moveMsg = recvChannel.fetch(this.currentTime);
+                }
+            }
+        }
+    }
+
     /**
       * @param {number} dt
       */
     update(dt) {
+        this.receiveNetMessage();
         super.update(dt);
+        this.sendNetMessage();
+    }
+
+    sendNetMessage() {
+        const moveMsgs = []
+        for (let player of this.players) {
+            /**@type {import("./player").MoveMsg} */
+            const moveMsg = player.consumeMoveMsg();
+            if (moveMsg != null) {
+                moveMsgs.push(moveMsg);
+            }
+            /**@type {ReplicateMoveMsg} */
+            const replicateMoveMsg = {
+                moveMsgs: moveMsgs,
+            }
+            for (let sendChannel of this.sendChannels) {
+                sendChannel.push(this.currentTime, replicateMoveMsg);
+            }
+        }
     }
 
     /**
