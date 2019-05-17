@@ -546,6 +546,24 @@ export default class Player {
      * @return {FloorResult}
      */
     findFloor(capsuleCenter, downSweepResult) {
+        const floorResult = this.computeFloorDist(capsuleCenter, downSweepResult);
+        if (floorResult && floorResult.blockingHit && !floorResult.lineTrace) {
+            if (!this.isWithinEdgeTolerance(capsuleCenter, floorResult.hitResult.impactPoint, this.capsule.radius)) {
+                floorResult.walkableFloor = false;
+            }
+            if (floorResult.floorDist < 0) {
+                floorResult.walkableFloor = false;
+            }
+        }
+        return floorResult;
+    }
+
+    /**
+     * @param {Vec2} capsuleCenter
+     * @param {HitResult} downSweepResult
+     * @return {FloorResult}
+     */
+    computeFloorDist(capsuleCenter, downSweepResult) {
         const heightCheckAdjust = this.movementInfo.currentModeMode == MoveMode.walking ? -MAX_FLOOR_DIST - KINDA_SMALL_NUMBER : MAX_FLOOR_DIST;
         const sweepRadius = this.capsule.radius;
         const capsuleRadius = sweepRadius;
@@ -829,10 +847,12 @@ export default class Player {
             console.warn("shit! i dont know how to deal with penetrating");
         } else {
             this.setMoveMode(MoveMode.falling);
-            return;
         }
         if (!this.movementInfo.justTeleported) {
             this.velocity = this.pos.sub(oldLocation).div(dt);
+        }
+        if (this.movementInfo.currentModeMode == MoveMode.falling) {
+            this.pos = this.pos.add(this.velocity.normalize().mul(0.15));
         }
         this.maintainHorizontalVelocity();
     }
