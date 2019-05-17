@@ -12,6 +12,13 @@ import { lineSweep } from "./geom/util";
  * @property {Vec2} pos - player position
  */
 
+const Role = {
+    simulate: 0,
+    authority: 1,
+    autonomous: 2,
+}
+Object.freeze(Role);
+
 const MoveMode = {
     none: 0,
     walking: 1,
@@ -82,6 +89,10 @@ class FloorResult {
     }
 }
 
+export {
+    Role,
+}
+
 export default class Player {
     /**
      * @param {Vec2} pos
@@ -97,6 +108,9 @@ export default class Player {
         this.capsule = new Capsule(pos, 20, 20, color);
 
         this.isMainPlayer = false;
+        this.role = Role.authority;
+        this.isNetMode = false;
+
         this.updatedTimestamp = 0;
         /** @type {any[]} */
         this.positionBuffer = [];

@@ -1,7 +1,7 @@
 // @ts-check
 
 import Instance from "./instance";
-import Player, { PlayerInfo } from "./player";
+import Player, { Role } from "./player";
 import Channel from "../network/channel";
 import Client from "./client";
 
@@ -34,18 +34,20 @@ export default class Server extends Instance {
 
     /**
      * generate a new player with player info and specific id
-     * @param {PlayerInfo} playerInfo
+     * @param {import("./player").PlayerInfo} playerInfo
      * @param {number} id
      */
     generatePlayer(playerInfo, id) {
         const player = new Player(playerInfo.pos, playerInfo.color, id);
+        player.role = Role.authority;
+        player.isNetMode = true;
         return player;
     }
 
     /**
      * @param {Channel} clientChannel
-     * @param {PlayerInfo} playerInfo
-     * @return {{serverChannel: Channel, id: number, playerInfos: PlayerInfo[]}}
+     * @param {import("./player").PlayerInfo} playerInfo
+     * @return {{serverChannel: Channel, id: number, playerInfos: import("./player").PlayerInfo[]}}
      */
     establish(clientChannel, playerInfo) {
         const id = this.generateId();

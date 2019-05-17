@@ -1,7 +1,7 @@
 // @ts-check
 
 import Instance from "./instance";
-import Player from "./player";
+import Player, { Role } from "./player";
 import Channel from "../network/channel";
 import Vec2 from "../algebra/vec2";
 import Server from "./server";
@@ -27,6 +27,7 @@ export default class Client extends Instance {
         if (mainPlayer != null) {
             this.mainPlayer = mainPlayer;
             this.mainPlayer.isMainPlayer = true;
+            this.mainPlayer.role = Role.autonomous;
             this.addNewPlayer(this.mainPlayer);
         }
 
@@ -36,19 +37,10 @@ export default class Client extends Instance {
         this.recvChannel = null;
 
         this.connected = false;
-        this.sequence = 0;
-        /** @type {SavedMove[]} */
-        this.pendingMoves = [];
         this.lag = 0;
         this.lagVariance = 0;
         this.loss = 0;
-        this.prediction = false;
-        this.reconciliation = false;
-        this.jitterBuffer = false;
         this.serverInterval = 0;
-        this.interpDelay = 100;
-        this.autoCalcDelayTime = true;
-        this.visualSmooth = false;
     }
 
     /**
@@ -87,6 +79,7 @@ export default class Client extends Instance {
             this.addRemotePlayer(playerInfo);
         }
         this.connected = true;
+        this.mainPlayer.isNetMode = true;
     }
 
     /**
@@ -102,6 +95,7 @@ export default class Client extends Instance {
         this.mainPlayer.id = 0;
         this.players.splice(1);
         this.connected = false;
+        this.mainPlayer.isNetMode = false;
     }
 
     /**
@@ -110,6 +104,8 @@ export default class Client extends Instance {
      */
     addRemotePlayer(playerInfo) {
         const player = new Player(playerInfo.pos, playerInfo.color, playerInfo.id);
+        player.isNetMode = true;
+        player.role = Role.simulate;
         this.addNewPlayer(player);
     }
 
@@ -154,12 +150,5 @@ export default class Client extends Instance {
             this.sendChannel.loss = loss;
             this.recvChannel.loss = loss;
         }
-    }
-
-    /**
-     * @param {boolean} visualSmooth
-     */
-    setVisualSmooth(visualSmooth) {
-
     }
 }

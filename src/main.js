@@ -24,6 +24,7 @@ const client1 = new Client(canvas1, client1Player, input1);
 const client2Player = new Player(new Vec2(400, 200), "#FEDFE1", 0);
 const input2 = new InputSystem();
 input2.setAxis("ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft");
+input2.setAction("jump", "Numpad0");
 const client2 = new Client(canvas3, client2Player, input2);
 // server
 const server = new Server(canvas2);
@@ -143,74 +144,6 @@ const handleSync = (server, id) => {
 handleSync(server, "server_sync");
 
 /**
- * predicition settings
- * @param {Client} client
- * @param {string} id
- * @param {string} id2
- */
-const handlePrediction = (client, id, id2) => {
-    /** @type {HTMLInputElement} */
-    const predictionInput = (document.getElementById(id));
-    /** @type {HTMLInputElement} */
-    const reconciliationInput = (document.getElementById(id2));
-    predictionInput.onchange = function(e) {
-        /** @type {HTMLInputElement} */
-        let target = (e.target);
-        client.prediction = target.checked;
-        if (!target.checked && client.reconciliation) {
-            reconciliationInput.checked = false;
-            client.reconciliation = false;
-        }
-    }
-    predictionInput.dispatchEvent(new Event("change"));
-}
-handlePrediction(client1, "client1_prediction", "client1_reconciliation");
-handlePrediction(client2, "client2_prediction", "client2_reconciliation");
-
-/**
- * reconciliation settings
- * @param {Client} client
- * @param {string} id
- * @param {string} id2
- */
-const handleReconciliation = (client, id, id2) => {
-    /** @type {HTMLInputElement} */
-    const reconciliationInput = (document.getElementById(id));
-    /** @type {HTMLInputElement} */
-    const predictionInput = (document.getElementById(id2));
-    reconciliationInput.onchange = function(e) {
-        /** @type {HTMLInputElement} */
-        let target = (e.target);
-        client.reconciliation = target.checked;
-        if (target.checked && !client.prediction) {
-            predictionInput.checked = true;
-            client.prediction = true;
-        }
-    }
-    reconciliationInput.dispatchEvent(new Event("change"));
-}
-handleReconciliation(client1, "client1_reconciliation", "client1_prediction");
-handleReconciliation(client2, "client2_reconciliation", "client2_prediction");
-
-/**
- * jitter buffer
- * @param {Client} client
- * @param {string} id
- */
-const handleJitterBuffer = (client, id) => {
-    /** @type {HTMLInputElement} */
-    const jitterBufferInput = (document.getElementById(id));
-    jitterBufferInput.onchange = function(e) {
-        /** @type {HTMLInputElement} */
-        let target = (e.target);
-        client.jitterBuffer = target.checked;
-    }
-    jitterBufferInput.dispatchEvent(new Event("change"));
-}
-handleJitterBuffer(client1, "client1_jitterBuffer");
-handleJitterBuffer(client2, "client2_jitterBuffer");
-
-/**
  * Connect
  * @param {Client} client
  * @param {string} id
@@ -231,24 +164,6 @@ const handleConnect = (client, id) => {
 }
 handleConnect(client1, "client1_connect");
 handleConnect(client2, "client2_connect");
-
-/**
- * visual smooth settings
- * @param {Client} client
- * @param {string} id
- */
-const handleVisualSmooth = (client, id) => {
-    /** @type {HTMLInputElement} */
-    const visualSmoothInput = (document.getElementById(id));
-    visualSmoothInput.onchange = function(e) {
-        /** @type {HTMLInputElement} */
-        let target = (e.target);
-        client.setVisualSmooth(target.checked);
-    }
-    visualSmoothInput.dispatchEvent(new Event("change"));
-}
-handleVisualSmooth(client1, "client1_visualSmooth");
-handleVisualSmooth(client2, "client2_visualSmooth");
 
 /**
  * event handle
