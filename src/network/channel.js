@@ -10,13 +10,15 @@ import Instance from "../core/instance";
 
 export default class Channel {
     /**
-     * @param {Instance} remote
+     * @param {Instance} sender
+     * @param {Instance} receiver
      * @param {number} lag
      * @param {number} lagVariance
      * @param {number} loss
      */
-    constructor(remote, lag = 0, lagVariance = 0, loss = 0) {
-        this.remote = remote;
+    constructor(sender, receiver, lag = 0, lagVariance = 0, loss = 0) {
+        this.sender = sender;
+        this.receiver = receiver;
         /** @type {ChannelPackege[]} */
         this.queue = [];
         this.lag = lag;

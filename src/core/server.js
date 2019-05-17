@@ -1,72 +1,101 @@
 // @ts-check
 
 import Instance from "./instance";
-import Player from "./player";
+import Player, { Role } from "./player";
 import Channel from "../network/channel";
 import Client from "./client";
 
 export default class Server extends Instance {
     /**
      * @param {HTMLCanvasElement} canvas
-     * @param {Player[]} players
      */
-    constructor(canvas, players) {
-        super(canvas, players);
+    constructor(canvas) {
+        super(canvas);
         /** @type {Channel[]} */
         this.sendChannels = [];
         /** @type {Channel[]} */
         this.recvChannels = [];
+        /**@type {Map<number, number>} */
+        this.idMap = new Map(); // id -> idx map
 
-        this.alwaysSync = false;
+        this.alwaysSync = true;
 
         this.idSeed = 1;
     }
 
     /**
-     * @param {Client} client
-     * @param {Channel} channel
+     * @return {number} new id
      */
-    establish(client, channel) {
-        const newPlayer = client.mainPlayer.clone();
-        newPlayer.id = this.idSeed;
-        newPlayer.scene = this.scene;
-        newPlayer.updatedTimestamp = client.currentTime;
-        newPlayer.hasUpdate = true;
+    generateId() {
+        const id = this.idSeed;
         this.idSeed++;
-        let addedPlayers = [];
-        for (let player of this.playerMap.values()) {
-            addedPlayers.push(player.clone());
-        }
-        client.receiveConnectInfos(newPlayer.id, addedPlayers)
-        for (let sendChannel of this.sendChannels) {
-            /** @type {Client} */
-            const remoteClient = (sendChannel.remote);
-            remoteClient.receiveNewPlayerAdd(newPlayer.clone());
-        }
-        this.playerMap.set(newPlayer.id, newPlayer);
-        this.recvChannels.push(channel);
-        const sendChannel = new Channel(client, client.lag, client.lagVariance, client.loss);
-        client.recvChannel = sendChannel;
-        this.sendChannels.push(sendChannel);
-        client.serverInterval = this.interval;
+        return id;
     }
 
     /**
-     * @param {Client} client
+     * generate a new player with player info and specific id
+     * @param {import("./player").PlayerInfo} playerInfo
+     * @param {number} id
      */
-    dismantle(client) {
-        this.playerMap.delete(client.mainPlayer.id);
-        let channelIdx = 0;
-        for (let channel of this.sendChannels) {
-            if (channel.remote != client) {
-                channelIdx++;
-                /** @type {Client} */
-                const remoteClient = (channel.remote);
-                remoteClient.receivePlayerRemove(client.mainPlayer.id);
+    generatePlayer(playerInfo, id) {
+        const player = new Player(playerInfo.pos, playerInfo.color, id);
+        player.role = Role.authority;
+        player.isNetMode = true;
+        return player;
+    }
+
+    /**
+     * @param {Channel} clientChannel
+     * @param {import("./player").PlayerInfo} playerInfo
+     * @return {{serverChannel: Channel, id: number, playerInfos: import("./player").PlayerInfo[]}}
+     */
+    establish(clientChannel, playerInfo) {
+        const id = this.generateId();
+        const idx = this.players.length;
+        this.idMap.set(id, idx);
+        const newPlayer = this.generatePlayer(playerInfo, id);
+        const newPlayerInfo = newPlayer.getPlayerInfo();
+        const respPlayerInfos = [];
+        for (let player of this.players) {
+            respPlayerInfos.push(player.getPlayerInfo());
+        }
+        this.addNewPlayer(newPlayer);
+        for (let sendChannel of this.sendChannels) {
+            /**@type {Client} */
+            const client = (sendChannel.receiver);
+            client.addRemotePlayer(newPlayerInfo);
+        }
+        const serverChannel = new Channel(this, clientChannel.sender, clientChannel.lag, clientChannel.lagVariance, clientChannel.loss);
+        this.sendChannels.push(serverChannel);
+        this.recvChannels.push(clientChannel);
+        return {
+            serverChannel: serverChannel,
+            id: id,
+            playerInfos: respPlayerInfos,
+        };
+    }
+
+    /**
+     * @param {number} id
+     */
+    dismantle(id) {
+        const idx = this.idMap.get(id);
+        this.idMap.delete(id);
+        this.sendChannels.splice(idx, 1);
+        this.recvChannels.splice(idx, 1);
+        this.players.splice(idx, 1);
+        for (let i = 0; i < this.players.length; i++) {
+            const remainId = this.players[i].id;
+            const oldIdx = this.idMap.get(remainId);
+            if (oldIdx > idx) {
+                this.idMap.set(remainId, oldIdx - 1);
             }
         }
-        this.sendChannels.splice(channelIdx, 1);
-        this.recvChannels.splice(channelIdx, 1);
+        for (let sendChannel of this.sendChannels) {
+            /**@type {Client} */
+            const client = (sendChannel.receiver);
+            client.removeRemotePlayer(id);
+        }
     }
 
     /**
@@ -74,70 +103,6 @@ export default class Server extends Instance {
       */
     update(dt) {
         super.update(dt);
-
-        const acks = [];
-        const errors = [];
-        for (let channel of this.recvChannels) {
-            let message = null;
-            let ack = 0;
-            let id = 0;
-            let error = false;
-            while (message = channel.fetch(this.currentTime)) {
-                const player = this.playerMap.get(message.id);
-                if (player && message.sequence > player.lastSequence) {
-                    if (message.timestamp < player.updatedTimestamp) {
-                        console.warn("message timestamp "+ message.timestamp +" < player updated timestamp " + player.updatedTimestamp);
-                    }
-                    player.lastSequence = message.sequence;
-                    ack = message.sequence;
-                    player.hasUpdate = true;
-                    player.setAcceleration(message.acceleration);
-                    player.recvPos = message.pos;
-                    ack = message.sequence;
-
-                    player.update((message.timestamp - player.updatedTimestamp) * 0.001);
-                    const posDiff = player.pos.sub(player.recvPos).length();
-                    if (posDiff > 15) {
-                        error = true;
-                    } else {
-                        error = false;
-                    }
-                    player.updatedTimestamp = message.timestamp;
-                }
-            }
-            acks.push(ack);
-            errors.push(error);
-        }
-
-        const infos = [];
-        for (let player of this.playerMap.values()) {
-            if (!player.hasUpdate) {
-                player.update(dt);
-            }
-            if (player.hasUpdate || this.alwaysSync) {
-                infos.push({
-                    timestamp: this.currentTime,
-                    id: player.id,
-                    pos: player.pos.clone(),
-                    velocity: player.velocity.clone()
-                });
-            }
-        }
-        for (let i = 0; i < this.sendChannels.length; i++) {
-            this.sendChannels[i].push(this.currentTime,
-            {
-                ack: acks[i],
-                error: errors[i],
-                infos: infos
-            });
-            // redundant package for against loss
-            // this.sendChannels[i].push(this.currentTime,
-            // {
-            //     ack: acks[i],
-            //     error: errors[i],
-            //     infos: infos
-            // });
-        }
     }
 
     /**
@@ -148,7 +113,7 @@ export default class Server extends Instance {
         super.setUpdate(interval);
         for (let channel of this.sendChannels) {
             /** @type {Client} */
-            const remoteClient = (channel.remote);
+            const remoteClient = (channel.receiver);
             remoteClient.serverInterval = interval;
         }
     }

@@ -9,9 +9,8 @@ import Vec2 from "../algebra/vec2";
 export default class Instance {
     /**
      * @param {HTMLCanvasElement} canvas
-     * @param {Player[]} players
      */
-    constructor(canvas, players) {
+    constructor(canvas) {
         this.canvas = canvas;
 
         this.ctx = canvas.getContext("2d");
@@ -25,13 +24,8 @@ export default class Instance {
         ], "#994639"));
         this.lastTime = 0;
         this.currentTime = 0;
-
-        /** @type {Map<number, Player>} */
-        this.playerMap = new Map();
-        for (let player of players) {
-            player.scene = this.scene;
-            this.playerMap.set(player.id, player);
-        }
+        /**@type {Player[]} */
+        this.players = [];
     }
 
     /**
@@ -39,7 +33,7 @@ export default class Instance {
      */
     draw() {
         this.scene.draw(this.ctx);
-        for (let player of this.playerMap.values()) {
+        for (let player of this.players) {
             player.draw(this.ctx);
         }
         this.scene.drawDebug(this.ctx);
@@ -50,11 +44,18 @@ export default class Instance {
      */
     update(dt) {
         this.scene.update(dt);
-        for (let player of this.playerMap.values()) {
-            player.clearAcceleration();
-            player.hasUpdate = false;
-            player.corrected = false;
+        for (let player of this.players) {
+            player.update(dt);
         }
+    }
+
+    /**
+     * add a new player into secne
+     * @param {Player} player
+     */
+    addNewPlayer(player) {
+        player.scene = this.scene;
+        this.players.push(player);
     }
 
     /**

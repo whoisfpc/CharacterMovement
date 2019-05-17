@@ -5,6 +5,20 @@ import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
 
+/**
+ * @typedef {Object} PlayerInfo
+ * @property {number} id - player id
+ * @property {string} color - player color
+ * @property {Vec2} pos - player position
+ */
+
+const Role = {
+    simulate: 0,
+    authority: 1,
+    autonomous: 2,
+}
+Object.freeze(Role);
+
 const MoveMode = {
     none: 0,
     walking: 1,
@@ -75,6 +89,10 @@ class FloorResult {
     }
 }
 
+export {
+    Role,
+}
+
 export default class Player {
     /**
      * @param {Vec2} pos
@@ -90,6 +108,9 @@ export default class Player {
         this.capsule = new Capsule(pos, 20, 20, color);
 
         this.isMainPlayer = false;
+        this.role = Role.authority;
+        this.isNetMode = false;
+
         this.updatedTimestamp = 0;
         /** @type {any[]} */
         this.positionBuffer = [];
@@ -129,7 +150,7 @@ export default class Player {
      * @return {Vec2} position of this player
      */
     get pos() {
-        return this.capsule.center;
+        return this.capsule.center.clone();
     }
 
     /**
@@ -141,6 +162,17 @@ export default class Player {
             this.displayPos.x = this.pos.x;
             this.displayPos.y = this.pos.y;
         }
+    }
+
+    /**
+     * @return {PlayerInfo}
+     */
+    getPlayerInfo() {
+        return {
+            id: this.id,
+            color: this.color,
+            pos: this.pos,
+        };
     }
 
     /**
@@ -546,6 +578,24 @@ export default class Player {
      * @return {FloorResult}
      */
     findFloor(capsuleCenter, downSweepResult) {
+        const floorResult = this.computeFloorDist(capsuleCenter, downSweepResult);
+        if (floorResult && floorResult.blockingHit && !floorResult.lineTrace) {
+            if (!this.isWithinEdgeTolerance(capsuleCenter, floorResult.hitResult.impactPoint, this.capsule.radius)) {
+                floorResult.walkableFloor = false;
+            }
+            if (floorResult.floorDist < 0) {
+                floorResult.walkableFloor = false;
+            }
+        }
+        return floorResult;
+    }
+
+    /**
+     * @param {Vec2} capsuleCenter
+     * @param {HitResult} downSweepResult
+     * @return {FloorResult}
+     */
+    computeFloorDist(capsuleCenter, downSweepResult) {
         const heightCheckAdjust = this.movementInfo.currentModeMode == MoveMode.walking ? -MAX_FLOOR_DIST - KINDA_SMALL_NUMBER : MAX_FLOOR_DIST;
         const sweepRadius = this.capsule.radius;
         const capsuleRadius = sweepRadius;
@@ -829,10 +879,12 @@ export default class Player {
             console.warn("shit! i dont know how to deal with penetrating");
         } else {
             this.setMoveMode(MoveMode.falling);
-            return;
         }
         if (!this.movementInfo.justTeleported) {
             this.velocity = this.pos.sub(oldLocation).div(dt);
+        }
+        if (this.movementInfo.currentModeMode == MoveMode.falling) {
+            this.pos = this.pos.add(this.velocity.normalize().mul(0.15));
         }
         this.maintainHorizontalVelocity();
     }
