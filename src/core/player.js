@@ -5,6 +5,13 @@ import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
 
+/**
+ * @typedef {Object} PlayerInfo
+ * @property {number} id - player id
+ * @property {string} color - player color
+ * @property {Vec2} pos - player position
+ */
+
 const MoveMode = {
     none: 0,
     walking: 1,
@@ -129,7 +136,7 @@ export default class Player {
      * @return {Vec2} position of this player
      */
     get pos() {
-        return this.capsule.center;
+        return this.capsule.center.clone();
     }
 
     /**
@@ -141,6 +148,17 @@ export default class Player {
             this.displayPos.x = this.pos.x;
             this.displayPos.y = this.pos.y;
         }
+    }
+
+    /**
+     * @return {PlayerInfo}
+     */
+    getPlayerInfo() {
+        return {
+            id: this.id,
+            color: this.color,
+            pos: this.pos,
+        };
     }
 
     /**

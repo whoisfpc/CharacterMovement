@@ -15,20 +15,18 @@ const canvas2 = (document.getElementById("canvas2"));
 const canvas3 = (document.getElementById("canvas3"));
 
 // client 1
-const client1Players = [new Player(new Vec2(50, 200), "#FBE251", 0)];
-client1Players[0].isMainPlayer = true;
+const client1Player = new Player(new Vec2(50, 200), "#FBE251", 0);
 const input1 = new InputSystem();
 input1.setAxis("KeyW", "KeyS", "KeyD", "KeyA");
 input1.setAction("jump", "Space");
-const client1 = new Client(canvas1, client1Players, input1);
+const client1 = new Client(canvas1, client1Player, input1);
 // client 2
-const client2Players = [];//[new Player(new Vec2(400, 200), "#FEDFE1", 0)];
-//client2Players[0].isMainPlayer = true;
+const client2Player = new Player(new Vec2(400, 200), "#FEDFE1", 0);
 const input2 = new InputSystem();
 input2.setAxis("ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft");
-const client2 = new Client(canvas3, client2Players, input2);
+const client2 = new Client(canvas3, client2Player, input2);
 // server
-const server = new Server(canvas2, []);
+const server = new Server(canvas2);
 // instances
 const instances = [client1, client2, server];
 
