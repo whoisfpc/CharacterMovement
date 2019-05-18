@@ -42,9 +42,9 @@ npm run dev
 - [x] Step up stairs
 - [x] Falling
 - [x] Jumping
-- [ ] Animation (WIP)
+- [x] Animation
 - [ ] Improve robustness
-- [ ] Network multiplayer
+- [x] Network multiplayer
 
 ## License
 This project is licensed under the MIT License - see the **LICENSE** file for details
