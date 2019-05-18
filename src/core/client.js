@@ -140,6 +140,7 @@ export default class Client extends Instance {
         const player = new Player(playerInfo.pos, playerInfo.color, playerInfo.id);
         player.isNetMode = true;
         player.role = Role.simulate;
+        player.animator = playerInfo.animator;
         this.addNewPlayer(player);
     }
 

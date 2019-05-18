@@ -92,6 +92,7 @@ export {
  * @property {number} id - player id
  * @property {string} color - player color
  * @property {Vec2} pos - player position
+ * @property {Animator} animator - animator of player
  *
  * @typedef {Object} MoveMsg
  * @property {number} id
@@ -137,6 +138,7 @@ export default class Player {
         this.visualSmooth = false;
         /**@type {Animator} */
         this.animator = null;
+        this.flipAnime = false;
 
         this.movementInfo = {
             input: new Vec2(),
@@ -192,6 +194,7 @@ export default class Player {
             id: this.id,
             color: this.color,
             pos: this.pos,
+            animator: this.animator.clone(),
         };
     }
 
@@ -370,7 +373,11 @@ export default class Player {
             let key = "";
             switch (this.movementInfo.currentModeMode) {
                 case MoveMode.walking:
-                    key = "walking";
+                    if (this.velocity.x == 0) {
+                        key = "idle";
+                    } else {
+                        key = "walking";
+                    }
                     break;
                 case MoveMode.falling:
                     key = "falling";
@@ -378,8 +385,13 @@ export default class Player {
                 default:
                     break;
             }
+            if (this.velocity.x > 0) {
+                this.flipAnime = false;
+            } else if (this.velocity.x < 0) {
+                this.flipAnime = true;
+            }
             this.animator.setAnimeKey(key);
-            this.animator.draw(ctx, dt, this.pos, this.velocity.x < 0, 2);
+            this.animator.draw(ctx, dt, this.pos, this.flipAnime, 2);
         }
         if (Debug.showPos) {
             this.capsule.draw(ctx, "#C00000", null, true);

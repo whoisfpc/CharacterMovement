@@ -58,10 +58,65 @@ const walkAnimConfig = {
         }
     ]
 }
+const idleAnimConfig = {
+    imageSrcs: [
+        "images/adventurer-idle-00.png",
+        "images/adventurer-idle-01.png",
+        "images/adventurer-idle-02.png",
+        "images/adventurer-idle-03.png",
+    ],
+    frames: [
+        {
+            idx: 0,
+            duration: 0.2,
+            pivot: new Vec2(25, 22),
+        },
+        {
+            idx: 1,
+            duration: 0.2,
+            pivot: new Vec2(25, 22),
+        },
+        {
+            idx: 2,
+            duration: 0.2,
+            pivot: new Vec2(25, 22),
+        },
+        {
+            idx: 3,
+            duration: 0.2,
+            pivot: new Vec2(25, 22),
+        },
+    ]
+}
+const fallAnimConfig = {
+    imageSrcs: [
+        "images/adventurer-fall-00.png",
+        "images/adventurer-fall-01.png",
+    ],
+    frames: [
+        {
+            idx: 0,
+            duration: 0.1,
+            pivot: new Vec2(28, 22),
+        },
+        {
+            idx: 1,
+            duration: 0.1,
+            pivot: new Vec2(28, 22),
+        },
+    ]
+}
 const walkAnimeClip = new AnimeClip(walkAnimConfig);
 walkAnimeClip.loadImages();
+const idleAnimClip = new AnimeClip(idleAnimConfig);
+idleAnimClip.loadImages();
+const fallAnimClip = new AnimeClip(fallAnimConfig);
+fallAnimClip.loadImages();
+
 const client1Animator = new Animator();
 client1Animator.addNewAnimeClip("walking", walkAnimeClip);
+client1Animator.addNewAnimeClip("idle", idleAnimClip);
+client1Animator.addNewAnimeClip("falling", fallAnimClip);
 
 // client 1
 const client1Player = new Player(new Vec2(50, 200), "#FBE251", 0);
@@ -72,6 +127,7 @@ input1.setAction("jump", "Space");
 const client1 = new Client(canvas1, client1Player, input1);
 // client 2
 const client2Player = new Player(new Vec2(400, 200), "#FEDFE1", 0);
+client2Player.animator = client1Animator.clone();
 const input2 = new InputSystem();
 input2.setAxis("ArrowUp", "ArrowDown", "ArrowRight", "ArrowLeft");
 input2.setAction("jump", "Numpad0");

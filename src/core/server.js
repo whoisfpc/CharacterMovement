@@ -46,6 +46,7 @@ export default class Server extends Instance {
         const player = new Player(playerInfo.pos, playerInfo.color, id);
         player.role = Role.authority;
         player.isNetMode = true;
+        player.animator = playerInfo.animator;
         return player;
     }
 

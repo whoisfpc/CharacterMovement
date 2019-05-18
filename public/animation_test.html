@@ -17,6 +17,50 @@
     const width = canvas.width;
     const height = canvas.height;
 
+    const idleAnimConfig = {
+        imageSrcs: [
+            "images/adventurer-idle-00.png",
+            "images/adventurer-idle-01.png",
+            "images/adventurer-idle-02.png",
+            "images/adventurer-idle-03.png",
+        ],
+        frames: [
+            {
+                idx: 0,
+                duration: 0.2,
+            },
+            {
+                idx: 1,
+                duration: 0.2,
+            },
+            {
+                idx: 2,
+                duration: 0.2,
+            },
+            {
+                idx: 3,
+                duration: 0.2,
+            },
+        ]
+    }
+
+    const fallAnimConfig = {
+        imageSrcs: [
+            "images/adventurer-fall-00.png",
+            "images/adventurer-fall-01.png",
+        ],
+        frames: [
+            {
+                idx: 0,
+                duration: 0.1,
+            },
+            {
+                idx: 1,
+                duration: 0.1,
+            },
+        ]
+    }
+
     const animConfig = {
         imageSrcs: [
             "images/adventurer-run-00.png",
@@ -127,8 +171,8 @@
     }
 
     ctx.imageSmoothingEnabled = false;
-    const anim = new MyAnimation(animConfig);
-    const flipAnim = new MyAnimation(animConfig);
+    const anim = new MyAnimation(fallAnimConfig);
+    const flipAnim = new MyAnimation(fallAnimConfig);
 
     let stop = false;
     let lastTime = 0;

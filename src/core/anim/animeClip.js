@@ -27,7 +27,13 @@ export default class AnimeClip {
         this.currentDuration = 0;
     }
 
+    /**
+     * @return {AnimeClip}
+     */
     clone() {
+        const animeClip = new AnimeClip(this.config);
+        animeClip.images = this.images;
+        return animeClip;
     }
 
     loadImages() {

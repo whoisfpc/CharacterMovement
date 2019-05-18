@@ -11,6 +11,17 @@ export default class Animator {
     }
 
     /**
+     * @return {Animator}
+     */
+    clone() {
+        const animator = new Animator();
+        this.animMap.forEach((animeClip, key) => {
+            animator.addNewAnimeClip(key, animeClip.clone());
+        });
+        return animator;
+    }
+
+    /**
      *
      * @param {string} key
      * @param {AnimeClip} animeClip
