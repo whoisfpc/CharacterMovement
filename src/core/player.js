@@ -5,6 +5,7 @@ import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
 import Animator from "./anim/animator";
+import { debug } from "util";
 
 const Role = {
     simulate: 0,
@@ -93,6 +94,7 @@ export {
  * @property {string} color - player color
  * @property {Vec2} pos - player position
  * @property {Animator} animator - animator of player
+ * @property {boolean} flipAnime
  *
  * @typedef {Object} MoveMsg
  * @property {number} id
@@ -110,8 +112,9 @@ export default class Player {
      * @param {Vec2} pos
      * @param {string} color
      * @param {number} id
+     * @param {boolean} [flipAnime]
      */
-    constructor(pos, color, id) {
+    constructor(pos, color, id, flipAnime = false) {
         this.displayPos = pos.clone();
         this.color = color;
         this.id = id;
@@ -130,15 +133,13 @@ export default class Player {
         this.corrected = false; // server correct client pos and velocity
         /** @type {Scene}*/
         this.scene = null;
-        this.recvPos = new Vec2(0, 0); // received player pos
-        this.recvVel = new Vec2(0, 0); // received player velocity
         /** @type {Vec2} */
         this.velocity = new Vec2(0, 0);
         this.acceleration = new Vec2(0, 0);
         this.visualSmooth = false;
         /**@type {Animator} */
         this.animator = null;
-        this.flipAnime = false;
+        this.flipAnime = flipAnime;
 
         this.movementInfo = {
             input: new Vec2(),
@@ -195,6 +196,7 @@ export default class Player {
             color: this.color,
             pos: this.pos,
             animator: this.animator.clone(),
+            flipAnime: this.flipAnime,
         };
     }
 
@@ -364,10 +366,12 @@ export default class Player {
      * @param {number} dt
      */
     draw(ctx, dt) {
-        if (!this.visualSmooth) {
-            this.capsule.draw(ctx);
-        } else {
-            this.capsule.draw(ctx, null, this.displayPos);
+        if (Debug.showCapsule) {
+            if (!this.visualSmooth) {
+                this.capsule.draw(ctx);
+            } else {
+                this.capsule.draw(ctx, null, this.displayPos);
+            }
         }
         if (this.animator) {
             let key = "";
@@ -395,9 +399,6 @@ export default class Player {
         }
         if (Debug.showPos) {
             this.capsule.draw(ctx, "#C00000", null, true);
-        }
-        if (Debug.showRecvPos) {
-            this.capsule.draw(ctx, "#0000C0", this.recvPos, true);
         }
     }
 
@@ -1123,6 +1124,7 @@ export default class Player {
      * @param {number} dt
      */
     simulateMove(dt) {
-        this.startNewPhysics(dt);
+        //TODO: need more complex simulate
+        this.move(this.velocity.mul(dt));
     }
 }

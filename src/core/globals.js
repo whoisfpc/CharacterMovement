@@ -14,7 +14,7 @@ const KeyStates = {};
 // Global Debug flags
 const Debug = {
     showPos: false,
-    showRecvPos: false,
+    showCapsule: false,
     showDebugDraw: false
 }
 

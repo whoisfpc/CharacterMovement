@@ -43,7 +43,7 @@ export default class Server extends Instance {
      * @param {number} id
      */
     generatePlayer(playerInfo, id) {
-        const player = new Player(playerInfo.pos, playerInfo.color, id);
+        const player = new Player(playerInfo.pos, playerInfo.color, id, playerInfo.flipAnime);
         player.role = Role.authority;
         player.isNetMode = true;
         player.animator = playerInfo.animator;

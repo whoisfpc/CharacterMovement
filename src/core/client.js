@@ -137,7 +137,7 @@ export default class Client extends Instance {
      * @param {import("./player").PlayerInfo} playerInfo
      */
     addRemotePlayer(playerInfo) {
-        const player = new Player(playerInfo.pos, playerInfo.color, playerInfo.id);
+        const player = new Player(playerInfo.pos, playerInfo.color, playerInfo.id, playerInfo.flipAnime);
         player.isNetMode = true;
         player.role = Role.simulate;
         player.animator = playerInfo.animator;
