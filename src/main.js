@@ -6,6 +6,8 @@ import InputSystem from "./core/input/inputSystem";
 import Client from "./core/client";
 import Server from "./core/server";
 import { Time, KeyStates } from "./core/globals";
+import Animator from "./core/anim/animator";
+import AnimeClip from "./core/anim/animeClip";
 
 /** @type {HTMLCanvasElement} */
 const canvas1 = (document.getElementById("canvas1"));
@@ -14,8 +16,56 @@ const canvas2 = (document.getElementById("canvas2"));
 /** @type {HTMLCanvasElement} */
 const canvas3 = (document.getElementById("canvas3"));
 
+const walkAnimConfig = {
+    imageSrcs: [
+        "images/adventurer-run-00.png",
+        "images/adventurer-run-01.png",
+        "images/adventurer-run-02.png",
+        "images/adventurer-run-03.png",
+        "images/adventurer-run-04.png",
+        "images/adventurer-run-05.png",
+    ],
+    frames: [
+        {
+            idx: 0,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        },
+        {
+            idx: 1,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        },
+        {
+            idx: 2,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        },
+        {
+            idx: 3,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        },
+        {
+            idx: 4,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        },
+        {
+            idx: 5,
+            duration: 0.1,
+            pivot: new Vec2(30, 22),
+        }
+    ]
+}
+const walkAnimeClip = new AnimeClip(walkAnimConfig);
+walkAnimeClip.loadImages();
+const client1Animator = new Animator();
+client1Animator.addNewAnimeClip("walking", walkAnimeClip);
+
 // client 1
 const client1Player = new Player(new Vec2(50, 200), "#FBE251", 0);
+client1Player.animator = client1Animator;
 const input1 = new InputSystem();
 input1.setAxis("KeyW", "KeyS", "KeyD", "KeyA");
 input1.setAction("jump", "Space");
@@ -196,7 +246,6 @@ const draw = (timestamp) => {
     Time.currentTime += dt;
     for (let instance of instances) {
         instance.tryUpdate();
-        instance.draw();
     }
 
     requestAnimationFrame(draw);

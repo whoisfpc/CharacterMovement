@@ -30,11 +30,12 @@ export default class Instance {
 
     /**
      * draw scene and players
+     * @param {number} dt
      */
-    draw() {
+    draw(dt) {
         this.scene.draw(this.ctx);
         for (let player of this.players) {
-            player.draw(this.ctx);
+            player.draw(this.ctx, dt);
         }
         this.scene.drawDebug(this.ctx);
     }
@@ -71,7 +72,9 @@ export default class Instance {
             let unscaleDt = Time.currentUnscaleTime - this.lastTime;
             if (unscaleDt >= this.interval) {
                 this.currentTime += this.interval * Time.scale;
-                this.update(this.interval * 0.001 * Time.scale);
+                const dt = this.interval * 0.001 * Time.scale;
+                this.update(dt);
+                this.draw(dt);
                 this.lastTime = Time.currentUnscaleTime - unscaleDt + this.interval;
             }
         } else {

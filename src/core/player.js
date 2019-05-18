@@ -4,6 +4,7 @@ import Scene, { DurationType } from "./scene";
 import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
+import Animator from "./anim/animator";
 
 const Role = {
     simulate: 0,
@@ -115,7 +116,7 @@ export default class Player {
         this.id = id;
         this.maxAcceleration = 800;
         this.maxSpeed = 300;
-        this.capsule = new Capsule(pos, 20, 20, color);
+        this.capsule = new Capsule(pos, 15, 12, color);
 
         this.isMainPlayer = false;
         this.role = Role.authority;
@@ -134,6 +135,8 @@ export default class Player {
         this.velocity = new Vec2(0, 0);
         this.acceleration = new Vec2(0, 0);
         this.visualSmooth = false;
+        /**@type {Animator} */
+        this.animator = null;
 
         this.movementInfo = {
             input: new Vec2(),
@@ -355,12 +358,28 @@ export default class Player {
     /**
      * draw this polygon
      * @param {CanvasRenderingContext2D} ctx
+     * @param {number} dt
      */
-    draw(ctx) {
+    draw(ctx, dt) {
         if (!this.visualSmooth) {
             this.capsule.draw(ctx);
         } else {
             this.capsule.draw(ctx, null, this.displayPos);
+        }
+        if (this.animator) {
+            let key = "";
+            switch (this.movementInfo.currentModeMode) {
+                case MoveMode.walking:
+                    key = "walking";
+                    break;
+                case MoveMode.falling:
+                    key = "falling";
+                    break;
+                default:
+                    break;
+            }
+            this.animator.setAnimeKey(key);
+            this.animator.draw(ctx, dt, this.pos, this.velocity.x < 0, 2);
         }
         if (Debug.showPos) {
             this.capsule.draw(ctx, "#C00000", null, true);
