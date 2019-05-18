@@ -106,17 +106,50 @@ const fallAnimConfig = {
         },
     ]
 }
+const jumpAnimConfig = {
+    imageSrcs: [
+        "images/adventurer-jump-00.png",
+        "images/adventurer-jump-01.png",
+        "images/adventurer-jump-02.png",
+        "images/adventurer-jump-03.png",
+    ],
+    frames: [
+        {
+            idx: 0,
+            duration: 0.01,
+            pivot: new Vec2(28, 22),
+        },
+        {
+            idx: 1,
+            duration: 0.01,
+            pivot: new Vec2(28, 22),
+        },
+        {
+            idx: 2,
+            duration: 0.08,
+            pivot: new Vec2(28, 22),
+        },
+        {
+            idx: 3,
+            duration: 0.08,
+            pivot: new Vec2(28, 22),
+        },
+    ]
+}
 const walkAnimeClip = new AnimeClip(walkAnimConfig);
 walkAnimeClip.loadImages();
 const idleAnimClip = new AnimeClip(idleAnimConfig);
 idleAnimClip.loadImages();
 const fallAnimClip = new AnimeClip(fallAnimConfig);
 fallAnimClip.loadImages();
+const jumpAnimClip = new AnimeClip(jumpAnimConfig);
+jumpAnimClip.loadImages();
 
 const client1Animator = new Animator();
 client1Animator.addNewAnimeClip("walking", walkAnimeClip);
 client1Animator.addNewAnimeClip("idle", idleAnimClip);
 client1Animator.addNewAnimeClip("falling", fallAnimClip);
+client1Animator.addNewAnimeClip("jump", jumpAnimClip);
 
 // client 1
 const client1Player = new Player(new Vec2(50, 200), "#FBE251", 0);

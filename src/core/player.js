@@ -140,6 +140,8 @@ export default class Player {
         /**@type {Animator} */
         this.animator = null;
         this.flipAnime = flipAnime;
+        this.lastMoveMode = MoveMode.none;
+        this.jumpRemainTimer = 0;
 
         this.movementInfo = {
             input: new Vec2(),
@@ -384,11 +386,21 @@ export default class Player {
                     }
                     break;
                 case MoveMode.falling:
-                    key = "falling";
+                    if (this.lastMoveMode == MoveMode.walking) {
+                        key = "jump";
+                        this.jumpRemainTimer = 0.18;// jump anime clip total duration
+                        this.jumpRemainTimer -= dt;
+                    } else if (this.jumpRemainTimer > 0) {
+                        this.jumpRemainTimer -= dt;
+                        key = "jump";
+                    } else {
+                        key = "falling";
+                    }
                     break;
                 default:
                     break;
             }
+            this.lastMoveMode = this.movementInfo.currentModeMode;
             if (this.velocity.x > 0) {
                 this.flipAnime = false;
             } else if (this.velocity.x < 0) {
