@@ -95,7 +95,12 @@ export {
  * @typedef {Object} MoveMsg
  * @property {number} id
  * @property {number} sequence
+ * @property {number} dt
  * @property {Vec2} pos
+ * @property {Vec2} velocity
+ * @property {number} moveMode
+ * @property {Vec2} acceleration
+ * @property {boolean} pressedJump
  */
 
 export default class Player {
@@ -153,6 +158,9 @@ export default class Player {
         this.lastReceiveSequence = 0;
         /**@type {MoveMsg} */
         this.pendingMoveMsg = null;
+        /**@type {MoveMsg[]} */
+        this.historyMoveMsgs = [];
+        this.needReconciliation = false;
     }
 
     /**
@@ -301,18 +309,21 @@ export default class Player {
      */
     update(dt) {
         if (this.isMainPlayer) {
+            if (this.needReconciliation) {
+                this.reconciliation();
+            }
             const input = this.consumeMovement();
             this.acceleration = input.mul(this.maxAcceleration);
             this.performMovement(dt);
             if (this.isNetMode) {
-                this.updateMoveMsg();
+                this.updateMoveMsg(dt);
             }
         }
         else if (this.role == Role.authority) {
             this.updateMoveMsg();
         }
         else if (this.role == Role.simulate) {
-
+            this.simulateMove(dt);
         }
 
         if (Debug.showDebugDraw) {
@@ -952,6 +963,7 @@ export default class Player {
 
     clearNetState() {
         this.lastReceiveSequence = 0;
+        this.historyMoveMsgs = [];
     }
 
     /**
@@ -963,11 +975,29 @@ export default class Player {
         return newSequence;
     }
 
-    updateMoveMsg() {
+    /**
+     *
+     * @param {number} dt
+     */
+    updateMoveMsg(dt = 0) {
+        let newSequence;
+        if (this.role == Role.authority) {
+            newSequence = this.lastReceiveSequence;
+        } else {
+            newSequence = this.generateSequence();
+        }
         this.pendingMoveMsg = {
             id: this.id,
-            sequence: this.generateSequence(),
-            pos: this.pos,
+            sequence: newSequence,
+            dt: dt,
+            pos: this.pos.clone(),
+            velocity: this.velocity.clone(),
+            moveMode: this.movementInfo.currentModeMode,
+            acceleration: this.acceleration.clone(),
+            pressedJump: this.movementInfo.pressedJump,
+        }
+        if (this.role == Role.autonomous) {
+            this.historyMoveMsgs.push(this.pendingMoveMsg);
         }
     }
 
@@ -984,6 +1014,46 @@ export default class Player {
      *
      * @param {MoveMsg} moveMsg
      */
+    onMainPlayerReceiveServerMove(moveMsg) {
+        if (this.role != Role.autonomous) {
+            console.warn("onMainPlayerReceiveServerMove should only call on autonomous players");
+            return;
+        }
+        if (moveMsg.sequence <= this.lastReceiveSequence) {
+            return;
+        }
+        this.lastReceiveSequence = moveMsg.sequence;
+        const idx = this.historyMoveMsgs.findIndex(msg => msg.sequence == moveMsg.sequence);
+        if (idx != -1) {
+            const lastMsg = this.historyMoveMsgs[idx];
+            this.historyMoveMsgs.splice(0, idx + 1);
+            if (lastMsg.pos.sub(moveMsg.pos).length() > 20) {
+                this.pos = moveMsg.pos;
+                this.velocity = moveMsg.velocity;
+                this.movementInfo.currentModeMode = moveMsg.moveMode;
+                this.needReconciliation = true;
+            }
+        }
+    }
+
+    reconciliation() {
+        this.needReconciliation = false;
+        const savedPressedJump = this.movementInfo.pressedJump;
+        for (let moveMsg of this.historyMoveMsgs) {
+            this.acceleration = moveMsg.acceleration.clone();
+            this.movementInfo.pressedJump = moveMsg.pressedJump;
+            this.performMovement(moveMsg.dt);
+            moveMsg.pos = this.pos.clone();
+            moveMsg.velocity = this.velocity.clone();
+            moveMsg.moveMode = this.movementInfo.currentModeMode;
+        }
+        this.movementInfo.pressedJump = savedPressedJump;
+    }
+
+    /**
+     *
+     * @param {MoveMsg} moveMsg
+     */
     serverMove(moveMsg) {
         if (this.role != Role.authority) {
             console.warn("ServerMove should only call on authority players");
@@ -993,7 +1063,9 @@ export default class Player {
             return;
         }
         this.lastReceiveSequence = moveMsg.sequence;
-        this.pos = moveMsg.pos;
+        this.acceleration = moveMsg.acceleration.clone();
+        this.movementInfo.pressedJump = moveMsg.pressedJump;
+        this.performMovement(moveMsg.dt);
     }
 
     /**
@@ -1010,6 +1082,16 @@ export default class Player {
             return;
         }
         this.lastReceiveSequence = moveMsg.sequence;
-        this.pos = moveMsg.pos;
+        this.pos = moveMsg.pos.clone();
+        this.velocity = moveMsg.velocity.clone();
+        this.movementInfo.currentModeMode = moveMsg.moveMode;
+    }
+
+    /**
+     *
+     * @param {number} dt
+     */
+    simulateMove(dt) {
+        this.startNewPhysics(dt);
     }
 }

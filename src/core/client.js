@@ -56,6 +56,8 @@ export default class Client extends Instance {
                     if (findPlayer) {
                         findPlayer.onReplicateMove(moveMsg);
                     }
+                } else {
+                    this.mainPlayer.onMainPlayerReceiveServerMove(moveMsg);
                 }
             }
             replicateMoveMsg = this.recvChannel.fetch(this.currentTime);
