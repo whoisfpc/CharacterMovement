@@ -5,7 +5,6 @@ import { Debug } from "./globals";
 import Capsule, { HitResult } from "./geom/capsule";
 import { lineSweep } from "./geom/util";
 import Animator from "./anim/animator";
-import { debug } from "util";
 
 const Role = {
     simulate: 0,

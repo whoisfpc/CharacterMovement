@@ -18,12 +18,12 @@ const canvas3 = (document.getElementById("canvas3"));
 
 const walkAnimConfig = {
     imageSrcs: [
-        "images/adventurer-run-00.png",
-        "images/adventurer-run-01.png",
-        "images/adventurer-run-02.png",
-        "images/adventurer-run-03.png",
-        "images/adventurer-run-04.png",
-        "images/adventurer-run-05.png",
+        "public/images/adventurer-run-00.png",
+        "public/images/adventurer-run-01.png",
+        "public/images/adventurer-run-02.png",
+        "public/images/adventurer-run-03.png",
+        "public/images/adventurer-run-04.png",
+        "public/images/adventurer-run-05.png",
     ],
     frames: [
         {
@@ -60,10 +60,10 @@ const walkAnimConfig = {
 }
 const idleAnimConfig = {
     imageSrcs: [
-        "images/adventurer-idle-00.png",
-        "images/adventurer-idle-01.png",
-        "images/adventurer-idle-02.png",
-        "images/adventurer-idle-03.png",
+        "public/images/adventurer-idle-00.png",
+        "public/images/adventurer-idle-01.png",
+        "public/images/adventurer-idle-02.png",
+        "public/images/adventurer-idle-03.png",
     ],
     frames: [
         {
@@ -90,8 +90,8 @@ const idleAnimConfig = {
 }
 const fallAnimConfig = {
     imageSrcs: [
-        "images/adventurer-fall-00.png",
-        "images/adventurer-fall-01.png",
+        "public/images/adventurer-fall-00.png",
+        "public/images/adventurer-fall-01.png",
     ],
     frames: [
         {
@@ -108,10 +108,10 @@ const fallAnimConfig = {
 }
 const jumpAnimConfig = {
     imageSrcs: [
-        "images/adventurer-jump-00.png",
-        "images/adventurer-jump-01.png",
-        "images/adventurer-jump-02.png",
-        "images/adventurer-jump-03.png",
+        "public/images/adventurer-jump-00.png",
+        "public/images/adventurer-jump-01.png",
+        "public/images/adventurer-jump-02.png",
+        "public/images/adventurer-jump-03.png",
     ],
     frames: [
         {
