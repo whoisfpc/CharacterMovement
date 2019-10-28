@@ -155,7 +155,7 @@ export default class Capsule {
      * sweep test segment
      * @param {Vec2} dir sweep direction
      * @param {number} distance sweep max distance
-     * @param {Scene} scene test segment first point
+     * @param {Scene} scene the scene to been sweeped
      * @param {number} [tolerance] hit distance tolerance
      * @return {Util.HitResult} sweep result
      */
@@ -188,7 +188,7 @@ export default class Capsule {
      * sweep test segment
      * @param {Vec2} dir sweep direction
      * @param {number} distance sweep max distance
-     * @param {Scene} scene test segment first point
+     * @param {Scene} scene the scene to been sweeped
      * @param {number} [tolerance] hit distance tolerance
      * @return {Util.HitResult[]} sweep result
      */
