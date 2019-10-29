@@ -799,7 +799,7 @@
          * sweep test segment
          * @param {Vec2} dir sweep direction
          * @param {number} distance sweep max distance
-         * @param {Scene} scene test segment first point
+         * @param {Scene} scene the scene to been sweeped
          * @param {number} [tolerance] hit distance tolerance
          * @return {Util.HitResult} sweep result
          */
@@ -832,7 +832,7 @@
          * sweep test segment
          * @param {Vec2} dir sweep direction
          * @param {number} distance sweep max distance
-         * @param {Scene} scene test segment first point
+         * @param {Scene} scene the scene to been sweeped
          * @param {number} [tolerance] hit distance tolerance
          * @return {Util.HitResult[]} sweep result
          */
@@ -1078,6 +1078,7 @@
      * @typedef {Object} MoveMsg
      * @property {number} id
      * @property {number} sequence
+     * @property {number} timestamp
      * @property {number} dt
      * @property {Vec2} pos
      * @property {Vec2} velocity
@@ -1105,7 +1106,7 @@
             this.role = Role.authority;
             this.isNetMode = false;
 
-            this.updatedTimestamp = 0;
+            this.timestamp = 0;
             /** @type {any[]} */
             this.positionBuffer = [];
             this.hasUpdate = false;
@@ -1143,6 +1144,7 @@
 
             this.sequence = 1;
             this.lastReceiveSequence = 0;
+            this.lastReceiveTimestamp = 0;
             /**@type {MoveMsg} */
             this.pendingMoveMsg = null;
             /**@type {MoveMsg[]} */
@@ -1297,6 +1299,7 @@
          * @param {number} dt
          */
         update(dt) {
+            this.timestamp += dt;
             if (this.isMainPlayer) {
                 if (this.needReconciliation) {
                     this.reconciliation();
@@ -2012,6 +2015,7 @@
             this.pendingMoveMsg = {
                 id: this.id,
                 sequence: newSequence,
+                timestamp: this.timestamp,
                 dt: dt,
                 pos: this.pos.clone(),
                 velocity: this.velocity.clone(),
@@ -2085,10 +2089,15 @@
             if (moveMsg.sequence <= this.lastReceiveSequence) {
                 return;
             }
+            let dt = moveMsg.dt;
+            if (this.lastReceiveTimestamp != 0) {
+                dt = moveMsg.timestamp - this.lastReceiveTimestamp;
+            }
             this.lastReceiveSequence = moveMsg.sequence;
+            this.lastReceiveTimestamp = moveMsg.timestamp;
             this.acceleration = moveMsg.acceleration.clone();
             this.movementInfo.pressedJump = moveMsg.pressedJump;
-            this.performMovement(moveMsg.dt);
+            this.performMovement(dt);
         }
 
         /**

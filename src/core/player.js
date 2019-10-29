@@ -98,6 +98,7 @@ export {
  * @typedef {Object} MoveMsg
  * @property {number} id
  * @property {number} sequence
+ * @property {number} timestamp
  * @property {number} dt
  * @property {Vec2} pos
  * @property {Vec2} velocity
@@ -125,7 +126,7 @@ export default class Player {
         this.role = Role.authority;
         this.isNetMode = false;
 
-        this.updatedTimestamp = 0;
+        this.timestamp = 0;
         /** @type {any[]} */
         this.positionBuffer = [];
         this.hasUpdate = false;
@@ -163,6 +164,7 @@ export default class Player {
 
         this.sequence = 1;
         this.lastReceiveSequence = 0;
+        this.lastReceiveTimestamp = 0;
         /**@type {MoveMsg} */
         this.pendingMoveMsg = null;
         /**@type {MoveMsg[]} */
@@ -317,6 +319,7 @@ export default class Player {
      * @param {number} dt
      */
     update(dt) {
+        this.timestamp += dt;
         if (this.isMainPlayer) {
             if (this.needReconciliation) {
                 this.reconciliation();
@@ -1032,6 +1035,7 @@ export default class Player {
         this.pendingMoveMsg = {
             id: this.id,
             sequence: newSequence,
+            timestamp: this.timestamp,
             dt: dt,
             pos: this.pos.clone(),
             velocity: this.velocity.clone(),
@@ -1105,10 +1109,15 @@ export default class Player {
         if (moveMsg.sequence <= this.lastReceiveSequence) {
             return;
         }
+        let dt = moveMsg.dt;
+        if (this.lastReceiveTimestamp != 0) {
+            dt = moveMsg.timestamp - this.lastReceiveTimestamp;
+        }
         this.lastReceiveSequence = moveMsg.sequence;
+        this.lastReceiveTimestamp = moveMsg.timestamp;
         this.acceleration = moveMsg.acceleration.clone();
         this.movementInfo.pressedJump = moveMsg.pressedJump;
-        this.performMovement(moveMsg.dt);
+        this.performMovement(dt);
     }
 
     /**
