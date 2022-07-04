@@ -22,7 +22,8 @@ or start a development environment
 npm run dev
 ```
 ### 3. Try it
-> open the public/index.html or navigate to [localhost:5000](http://localhost:5000)
+> open the public/index.html or navigate to [localhost:5000](http://localhost:5000)  
+> Test online [https://whoisfpc.github.io/CharacterMovement/](https://whoisfpc.github.io/CharacterMovement/)
 
 ## What it is
 > It is a demo project, implement 2d capsule based character movement.
